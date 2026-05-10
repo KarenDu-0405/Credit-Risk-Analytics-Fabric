@@ -1,0 +1,66 @@
+DAX Measurement:
+-------------------------------------------------------
+Avg_Sector_Spread = 
+       AVERAGE('cds_spread'[Monthly_Spread])
+	   
+Avg_Financial_Spread = 
+		CALCULATE(
+			AVERAGE(cds_spread[Monthly_Spread]),
+			'cds_transactions'[Sector] = "Financials"
+			)
+
+-------------------------------------------------------
+Total_Notional_Exposure = SUM('cds_transactions'[Notional_GBP_M])
+
+Max_Exposure_% = MAXX(VALUES(cds_transactions[Counterparty_ID]),[Exposure_Concentration_%])
+
+-------------------------------------------------------
+Exposure_Concentration_% = 
+VAR CurrentCPExposure = [Total_Notional_Exposure]
+VAR TotalPortfolioExposure = 
+    CALCULATE(
+        [Total_Notional_Exposure],
+        REMOVEFILTERS('cds_transactions')
+    )
+RETURN 
+    DIVIDE(CurrentCPExposure, TotalPortfolioExposure, 0)
+	
+Max_Exposure_% = MAXX(VALUES(cds_transactions[Counterparty_ID]),[Exposure_Concentration_%])
+
+Concentration_Limit_GBP = 
+VAR ConcentrationThreshold = 0.009 // Change this to 0.10 for 10%, 0.08 for 8%, etc.
+VAR TotalPortfolioExposure = 
+    CALCULATE(
+        [Total_Notional_Exposure],
+        REMOVEFILTERS('cds_transactions') // Ignores the counterparty row to get the Grand Total
+    )
+RETURN 
+    TotalPortfolioExposure * ConcentrationThreshold
+	
+
+Concentration_Breaches = 
+        COUNTROWS(
+            FILTER(VALUES('cds_transactions'[Counterparty_ID]),
+            [Exposure_Concentration_%]>0.009)
+        
+-------------------------------------------------------
+Geopolitical_Shock_BPS = GENERATESERIES(0, 200, 10)
+
+Stressed_Exposure_GBP = [Total_Notional_Exposure] * (1 + ('Geopolitical_Shock_BPS'[Geopolitical_Shock_BPS Value])/10000)
+
+Capital_Shortfall = 
+        [Stressed_Exposure_GBP] - [Total_Notional_Exposure]
+		
+Shortfall_Impact_% = DIVIDE([Capital_Shortfall], [Total_Notional_Exposure])
+
+
+
+-------------------------------------------------------
+Retail_HY_Exposure = 
+CALCULATE(
+    [Total_Notional_Exposure],
+    'cds_transactions'[PRIN12_Cat] = "Retail Client",
+    'cds_transactions'[Rating_Buckets] = "High Yield"
+)
+
+Risk_Flag = IF([Avg_Sector_Spread] > 400 && SELECTEDVALUE('cds_transactions'[PRIN12_Cat]) = "Retail Client", "🚩", "")
