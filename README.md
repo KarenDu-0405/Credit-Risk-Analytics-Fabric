@@ -23,7 +23,12 @@ Earlier this year, global markets experienced severe volatility driven by escala
 * **The Logic:** Built a dynamic `Capital_Shortfall` measure using DAX to isolate the financial delta between current valuations and stressed scenarios.
 * **The Quant Insight:** By implementing a 90bps shock, the model identified a **£4.7bn systemic liquidity gap**, with Financials exhibiting the highest sensitivity to the primary shock.
 
-### 3. Regulatory Compliance: PRIN 12 / Consumer Duty
+### 3. Independent Pricing Oversight & NAV Heatmap
+To support front-office Net Asset Valuation (NAV) calculations and credit spread assessments, I engineered a dynamic systemic risk heatmap. 
+* **The Architecture:** Designed a disconnected Matrix visual in Power BI, mapping absolute `Capital_Shortfall` (£) against a spectrum of Geopolitical Shock scenarios (0 to 200 bps) simultaneously. 
+* **Rebalancing Signals:** By utilizing Python script to apply realistic sector-level notional multipliers (e.g., 5x for systemic Financials, 0.3x for Consumer), the heatmap accurately reflects real-world market exposure. This provides immediate, visual rebalancing signals for portfolio managers, highlighting exactly at which bps threshold a sector's liquidity gap breaches risk tolerance limits.
+
+### 4. Regulatory Compliance: PRIN 12 / Consumer Duty
 Under the FCA PRIN & COND sourcebook, retail customers require the highest level of regulatory protection to ensure market stability. I designed a dedicated monitoring tab for FCA PRIN 12 compliance to ensure "Retail" end-user protection.
 * **Architecture:** Pushed compliance flagging logic upstream into the PySpark layer to maintain Direct Lake processing speeds while ensuring categorical accuracy.
 * **Monitoring:** Automated the identification of High-Yield exposure within retail-scope holdings to actively prevent regulatory breaches.
@@ -47,5 +52,6 @@ Under the FCA PRIN & COND sourcebook, retail customers require the highest level
 * `DAX_measures.txt`: A repository of the core quantitative DAX formulas used in the semantic model.
 * `Screenshot_model_view.png`: A snapshot of the Star Schema modeling logic within the Fabric workspace.
 * `CDS Final Cloud Report.pdf`: A static export of the final presentation layer.
+* * `(NAV Heatmap) CDS Final Cloud Report.pdf`: A static export of the presentation layer, adding NAV Heatmap visualization in "Greenland Risk Stress" tab.
 * `CDS_final_cloud_report_video.mp4`: A 50-second voiceless video demonstrating the interactive stress-testing and contagion filtering capabilities.
 
